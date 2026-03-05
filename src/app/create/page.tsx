@@ -81,7 +81,8 @@ export default function CreatePage() {
     setError('');
 
     try {
-      const { removeBackground } = await import('@imgly/background-removal');
+      // @ts-ignore - ESM CDN에서 런타임 로드
+      const { removeBackground } = await import(/* webpackIgnore: true */ 'https://esm.sh/@imgly/background-removal@1.7.0');
       const blob = await removeBackground(img.originalUrl);
       const url = URL.createObjectURL(blob);
       setImages(prev => {
@@ -171,7 +172,7 @@ export default function CreatePage() {
         ctx.drawImage(img, drawX, drawY, drawW, drawH);
       }
 
-      const blob = await new Promise<Blob>((resolve) => canvas.toBlob(resolve!, 'image/png'));
+      const blob = await new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/png'));
       blobs.push(blob);
     }
     return blobs;
