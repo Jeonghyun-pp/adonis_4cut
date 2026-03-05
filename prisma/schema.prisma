@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+model Person {
+  id           String      @id @default(cuid())
+  name         String
+  slug         String      @unique
+  thumbnailUrl String?
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  frames       Frame[]
+  renderJobs   RenderJob[]
+}
+
+model Frame {
+  id         String      @id @default(cuid())
+  personId   String
+  person     Person      @relation(fields: [personId], references: [id], onDelete: Cascade)
+  version    Int         @default(1)
+  width      Int         @default(1200)
+  height     Int         @default(1800)
+  overlayUrl String
+  isActive   Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  slots      FrameSlot[]
+  renderJobs RenderJob[]
+}
+
+model FrameSlot {
+  id           String  @id @default(cuid())
+  frameId      String
+  frame        Frame   @relation(fields: [frameId], references: [id], onDelete: Cascade)
+  index        Int
+  x            Int
+  y            Int
+  w            Int
+  h            Int
+  fitMode      String  @default("cover")
+  rotation     Float   @default(0)
+  borderRadius Int     @default(0)
+  maskUrl      String?
+  overlayUrl   String?
+  zIndex       Int     @default(0)
+}
+
+model RenderJob {
+  id        String        @id @default(cuid())
+  frameId   String
+  frame     Frame         @relation(fields: [frameId], references: [id])
+  personId  String
+  person    Person        @relation(fields: [personId], references: [id])
+  inputHash String
+  status    String        @default("queued")
+  progress  Int           @default(0)
+  error     String?
+  resultUrl String?
+  format    String        @default("png")
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  assets    RenderAsset[]
+
+  @@index([inputHash])
+  @@index([status])
+}
+
+model RenderAsset {
+  id    String    @id @default(cuid())
+  jobId String
+  job   RenderJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  kind  String
+  url   String
+}
+
+model Upload {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  data        Bytes
+  contentType String
+  createdAt   DateTime @default(now())
+}
