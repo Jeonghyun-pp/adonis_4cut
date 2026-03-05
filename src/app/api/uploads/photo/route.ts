@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server';
 import { getStorage } from '@/lib/storage';
 import { validateAndProcessUpload } from '@/lib/upload';
